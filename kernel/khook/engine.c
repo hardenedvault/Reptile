@@ -4,6 +4,8 @@ static khook_stub_t *khook_stub_tbl = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+static unsigned long vtest_lookup_name(const char *name);
+
 static int khook_lookup_cb(long data[], const char *name, void *module, long addr)
 {
 	int i = 0; while (!module && (((const char *)data[0]))[i] == name[i]) {
@@ -13,8 +15,13 @@ static int khook_lookup_cb(long data[], const char *name, void *module, long add
 
 static void *khook_lookup_name(const char *name)
 {
+        int (*vtest_kallsyms_on_each_symbol)(int (*fn)(void *, const char *, struct module *,
+                                      unsigned long),
+                            void *data) = NULL;
 	long data[2] = { (long)name, 0 };
-	kallsyms_on_each_symbol((void *)khook_lookup_cb, data);
+        vtest_kallsyms_on_each_symbol = (void*)vtest_lookup_name("kallsyms_on_each_symbol");
+        vtest_kallsyms_on_each_symbol((void *)khook_lookup_cb, data);
+	//kallsyms_on_each_symbol((void *)khook_lookup_cb, data);
 	return (void *)data[1];
 }
 

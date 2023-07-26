@@ -42,12 +42,20 @@ int get_cmdline(struct task_struct *task, char *buffer, int buflen)
 	if (!mm->arg_end)
 		goto out_mm;
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)
+	mmap_read_lock(current->mm);
+#else
 	down_read(&mm->mmap_sem);
+#endif
 	arg_start = mm->arg_start;
 	arg_end = mm->arg_end;
 	env_start = mm->env_start;
 	env_end = mm->env_end;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)
+	mmap_read_unlock(current->mm);
+#else
 	up_read(&mm->mmap_sem);
+#endif
 
 	len = arg_end - arg_start;
 
